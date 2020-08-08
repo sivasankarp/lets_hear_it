@@ -9,18 +9,20 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.teckudos.letshearit.databinding.FragmentSoundPlayBinding
-import com.teckudos.letshearit.viewmodels.MainViewModel
-import java.lang.Exception
+import com.teckudos.letshearit.viewmodels.SoundPlayViewModel
 
 
 class SoundPlayFragment : Fragment() {
 
     private lateinit var binding: FragmentSoundPlayBinding
+
     private val viewModel by lazy {
-        ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
+        ViewModelProvider(this).get(SoundPlayViewModel::class.java)
     }
 
     private lateinit var args: SoundPlayFragmentArgs
+
+    private lateinit var player: MediaPlayer
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -29,31 +31,62 @@ class SoundPlayFragment : Fragment() {
 
         binding = FragmentSoundPlayBinding.inflate(inflater, container, false)
         binding.lifecycleOwner = this
+
         binding.viewModel = viewModel
+
         args = SoundPlayFragmentArgs.fromBundle(requireArguments())
-        binding.outputPath = args.soundPath
+
+        init()
         initObserver()
+
         return binding.root
+    }
+
+    private fun init() {
+        player = MediaPlayer()
     }
 
     private fun initObserver() {
         viewModel.audioPlaying.observe(viewLifecycleOwner, Observer {
-            if (it == true) {
-                startPlaying()
-                binding.animation.playAnimation()
+            it?.let {
+                if (it) {
+                    startPlaying()
+                    binding.animation.playAnimation()
+                } else {
+                    player.stop()
+                    player.reset()
+                }
             }
         })
     }
 
     private fun startPlaying() {
-        val player = MediaPlayer()
         try {
+            player.setDataSource(args.soundPath)
             player.isLooping = false
             player.prepare()
+            player.setOnCompletionListener {
+                binding.animation.cancelAnimation()
+                viewModel.audioPlaying.value = false
+            }
             player.start()
         } catch (ex: Exception) {
+            binding.animation.cancelAnimation()
+            viewModel.audioPlaying.value = false
+            player.stop()
+            player.reset()
             print("error in playing $ex")
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        player.release()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        print("DEBUG fragment destroyed")
     }
 
 }

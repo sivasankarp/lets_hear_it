@@ -1,6 +1,5 @@
 package com.teckudos.letshearit.viewmodels
 
-import android.media.MediaRecorder
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
@@ -12,15 +11,11 @@ import com.teckudos.letshearit.utils.Constants
 import com.teckudos.letshearit.utils.Counter
 import kotlinx.coroutines.*
 
-class MainViewModel(private val counter: Counter) : ViewModel() {
+class SoundRecordViewModel(private val counter: Counter) : ViewModel() {
 
     val showProgress = MutableLiveData<Boolean>().apply { postValue(false) }
     val timerText = MediatorLiveData<String>()
     val processing = MutableLiveData<Boolean>().apply { postValue(false) }
-
-    private val _audioPlaying = MutableLiveData<Boolean?>()
-    val audioPlaying: LiveData<Boolean?>
-        get() = _audioPlaying
 
     private val _navigateToPlay = MutableLiveData<Boolean?>()
     val navigateToPlay: LiveData<Boolean?>
@@ -93,8 +88,12 @@ class MainViewModel(private val counter: Counter) : ViewModel() {
         }
     }
 
-    fun playAudio() {
-        _audioPlaying.value = true
+    fun navigatedToPlay() {
+        timerText.value = null
+        counter.secondsCount.value = 0
+        processing.value = false
+        showProgress.value = false
+        _navigateToPlay.value = null
     }
 
     override fun onCleared() {

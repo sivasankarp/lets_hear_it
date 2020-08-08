@@ -19,9 +19,6 @@
         android:name="com.teckudos.letshearit.ui.SoundPlayFragment"
         android:label="SoundPlayFragment"
         tools:layout="@layout/fragment_sound_play">
-        <action
-            android:id="@+id/action_soundPlayFragment_to_soundRecordFragment"
-            app:destination="@id/soundRecordFragment" />
         <argument
             android:name="soundPath"
             app:argType="string" />
