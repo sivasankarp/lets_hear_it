@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph.xml"
+    app:startDestination="@id/soundRecordFragment">
+
+    <fragment
+        android:id="@+id/soundRecordFragment"
+        android:name="com.teckudos.letshearit.ui.SoundRecordFragment"
+        android:label="SoundRecordFragment"
+        tools:layout="@layout/fragment_sound_record">
+        <action
+            android:id="@+id/action_soundRecordFragment_to_soundPlayFragment"
+            app:destination="@id/soundPlayFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/soundPlayFragment"
+        android:name="com.teckudos.letshearit.ui.SoundPlayFragment"
+        android:label="SoundPlayFragment"
+        tools:layout="@layout/fragment_sound_play">
+        <action
+            android:id="@+id/action_soundPlayFragment_to_soundRecordFragment"
+            app:destination="@id/soundRecordFragment" />
+        <argument
+            android:name="soundPath"
+            app:argType="string" />
+    </fragment>
+</navigation>
