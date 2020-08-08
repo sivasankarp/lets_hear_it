@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.teckudos.letshearit.databinding.FragmentSoundRecordBinding
 import com.teckudos.letshearit.viewmodels.MainViewModel
 import java.io.File
@@ -31,6 +32,7 @@ class SoundRecordFragment : Fragment() {
         binding = FragmentSoundRecordBinding.inflate(inflater, container, false)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
+        initObserver()
         return binding.root
     }
 
@@ -50,6 +52,18 @@ class SoundRecordFragment : Fragment() {
         }
     }
 
+    private fun initObserver() {
+        viewModel.navigateToPlay.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+            if (it == true) {
+                this.findNavController().navigate(
+                    SoundRecordFragmentDirections.actionSoundRecordFragmentToSoundPlayFragment(
+                        viewModel.outputFilePath
+                    )
+                )
+            }
+        })
+    }
+
     private fun Calendar.toEpochSec(): Long = this.timeInMillis / 1000
 
     override fun onAttach(context: Context) {
@@ -57,7 +71,7 @@ class SoundRecordFragment : Fragment() {
         try {
             uiCallbacksListener = context as UICallbacksListener
         } catch (e: ClassCastException) {
-            Log.e("Error", "$context must implement UICommunicationListener")
+            Log.e("Error", "$context must implement UICallbacksListener")
         }
     }
 }

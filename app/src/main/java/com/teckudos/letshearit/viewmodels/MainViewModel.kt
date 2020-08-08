@@ -2,6 +2,7 @@ package com.teckudos.letshearit.viewmodels
 
 import android.media.MediaRecorder
 import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -11,10 +12,19 @@ import com.teckudos.letshearit.utils.Constants
 import com.teckudos.letshearit.utils.Counter
 import kotlinx.coroutines.*
 
-class MainViewModel(val counter: Counter) : ViewModel() {
+class MainViewModel(private val counter: Counter) : ViewModel() {
 
     val showProgress = MutableLiveData<Boolean>().apply { postValue(false) }
     val timerText = MediatorLiveData<String>()
+    val processing = MutableLiveData<Boolean>().apply { postValue(false) }
+
+    private val _audioPlaying = MutableLiveData<Boolean?>()
+    val audioPlaying: LiveData<Boolean?>
+        get() = _audioPlaying
+
+    private val _navigateToPlay = MutableLiveData<Boolean?>()
+    val navigateToPlay: LiveData<Boolean?>
+        get() = _navigateToPlay
 
     lateinit var inputFilePath: String
     lateinit var outputFilePath: String
@@ -38,7 +48,7 @@ class MainViewModel(val counter: Counter) : ViewModel() {
 
     private fun observeTimer() {
         timerText.addSource(counter.secondsCount) { timer ->
-            if (timer == 5) {
+            if (timer == Constants.MAX) {
                 timerText.removeSource(counter.secondsCount)
                 counter.stopTimer()
                 stopRecording()
@@ -53,24 +63,38 @@ class MainViewModel(val counter: Counter) : ViewModel() {
     }
 
     private fun processRecording() {
+        processing.value = true
         viewModelScope.launch {
+            var duration = -1.0F
+            var res = 0
             withContext(Dispatchers.IO) {
                 val soundTouch = SoundTouch()
-                soundTouch.setTempo(1.0F)
+                // soundTouch.setTempo(1.0F)
                 soundTouch.setPitchSemiTones(Constants.PITCH)
                 Log.i("SoundTouch", "process file${inputFilePath}")
                 val startTime = System.currentTimeMillis()
-                val res: Int = soundTouch.processFile(inputFilePath, outputFilePath)
+                res = soundTouch.processFile(inputFilePath, outputFilePath)
                 val endTime = System.currentTimeMillis()
-                val duration = (endTime - startTime) * 0.001f
+                duration = (endTime - startTime) * 0.001f
+            }
 
-                Log.i("SoundTouch", "process file done, duration = $duration")
-                if (res != 0) {
-                    val err: String = SoundTouch.getErrorString()
-                    Log.e("Failure", err)
-                }
+            Log.i("SoundTouch", "process file done, duration = $duration")
+            if (res != 0) {
+                val err: String = SoundTouch.getErrorString()
+                Log.e("Failure", err)
+                timerText.value = null
+                counter.secondsCount.value = 0
+                processing.value = false
+                showProgress.value = false
+            } else {
+                delay(1000)
+                _navigateToPlay.value = true
             }
         }
+    }
+
+    fun playAudio() {
+        _audioPlaying.value = true
     }
 
     override fun onCleared() {
