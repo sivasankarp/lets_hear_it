@@ -84,8 +84,8 @@ dependencies {
     implementation "androidx.navigation:navigation-runtime:$version_navigation"
 
     // Leak Canary (detecting memory leaks)
-    def leak_canary_version = "2.0-alpha-3"
-    debugImplementation "com.squareup.leakcanary:leakcanary-android:$leak_canary_version"
+    // def leak_canary_version = "2.0-alpha-3"
+    // debugImplementation "com.squareup.leakcanary:leakcanary-android:$leak_canary_version"
 
     // WAV recorder
     def wav_recorder = "1.4.0"
